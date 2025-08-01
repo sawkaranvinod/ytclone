@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package config.videostreame.v1;
+
+service VideoStreaming {
+    rpc credentials (credentialsRequest) returns (credentialsResponse);
+};
+
+message credentialsRequest {
+};
+
+message credentialsResponse {
+    string region = 1;
+    string bucketName =2;
+    string accessKeyId =3;
+    string secretAccessKey =4;
+};
+
