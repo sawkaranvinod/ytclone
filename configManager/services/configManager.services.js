@@ -7,6 +7,7 @@ export const services = {
                 bucketName: "chilandu",
                 region: "ap-south-1",
             };
+            const url = "mongodb+srv://project01072025:avinashkaran@youtubecloneproject.1bwp70u.mongodb.net"
             return callback(null,data)
         } catch (error) {
             console.log("error in the main fuction of the configmanager of the grpc server", error.message);

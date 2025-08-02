@@ -5,6 +5,12 @@ const viewSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref:"videos",
         required:true,
+    },
+    userId:{
+        type:String,
+        required:true,
+        lowercase:true,
+        trim:true,
     }
 });
 
