@@ -3,16 +3,43 @@ syntax = "proto3";
 package config.videostreame.v1;
 
 service VideoStreaming {
-    rpc credentials (credentialsRequest) returns (credentialsResponse);
+  rpc awsCredentials (CredentialsRequest) returns (CredentialsResponse);
+  rpc databaseUrl (DatabaseRequest) returns (DatabaseResponse);
+  rpc redisConfig (RedisConfigRequest) returns (RedisConfigResponse);
+  rpc kafkaConfig (KafkaConfigRequest) returns (KafkaConfigResponse);
+}
+
+message CredentialsRequest {};
+
+message CredentialsResponse {
+  string region = 1;
+  string bucketName = 2;
+  string accessKeyId = 3;
+  string secretAccessKey = 4;
 };
 
-message credentialsRequest {
+message DatabaseRequest {};
+
+message DatabaseResponse { 
+  string url = 1;
 };
 
-message credentialsResponse {
-    string region = 1;
-    string bucketName =2;
-    string accessKeyId =3;
-    string secretAccessKey =4;
+message RedisConfigRequest {};
+
+message RedisConfigResponse {
+  int32 port = 1;
+  string host = 2;
+  string username = 3;
+  string password = 4;
 };
 
+message KafkaConfigRequest {};
+
+message KafkaBroker {
+  string broker = 1;
+};
+
+message KafkaConfigResponse {
+  repeated KafkaBroker brokers = 1;
+  string clientId = 2;
+};
