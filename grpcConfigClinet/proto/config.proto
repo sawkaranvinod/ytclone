@@ -35,6 +35,7 @@ message RedisConfigResponse {
 
 message KafkaConfigRequest {};
 
+
 message KafkaConfigResponse {
   repeated string brokers = 1;
   string clientId = 2;

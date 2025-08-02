@@ -54,9 +54,10 @@ export const services = {
     kafkaConfig:async (call,callback) => {
         try {
             const data = {
-                brokers:["localhost:19092"],
-                clientId:"allClient"
-            }
+                brokers: ["localhost:19092"], // <-- fix here
+                clientId: "allClient"
+            };
+            return callback(null,data);
         } catch (error) {
             console.log("error in the main grpc server fuction of the config manager",error.message);
             return callback(
