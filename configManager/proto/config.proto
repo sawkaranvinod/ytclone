@@ -4,7 +4,7 @@ package config.videostreame.v1;
 
 service VideoStreaming {
   rpc awsCredentials (CredentialsRequest) returns (CredentialsResponse);
-  rpc databaseUrl (DatabaseRequest) returns (DatabaseResponse);
+  rpc databaseConfig (DatabaseRequest) returns (DatabaseResponse);
   rpc redisConfig (RedisConfigRequest) returns (RedisConfigResponse);
   rpc kafkaConfig (KafkaConfigRequest) returns (KafkaConfigResponse);
 }
@@ -21,7 +21,7 @@ message CredentialsResponse {
 message DatabaseRequest {};
 
 message DatabaseResponse { 
-  string url = 1;
+  string uri = 1;
 };
 
 message RedisConfigRequest {};
