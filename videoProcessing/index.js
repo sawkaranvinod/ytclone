@@ -15,7 +15,7 @@ const s3Client = new S3Client({
 });
 
 const bucketName = "chilandu";
-const key = "Zara Sa Audio Song - Jannat   Emraan Hashmi, Sonal   KK   Pritam   Sayeed Quadri   Mahesh Bhatt.mp4";
+const key = process.env.KEY;
 
 const RESOLUTIONS = [
   { name: "144p", width: 256, height: 144 },
@@ -122,7 +122,7 @@ async function uploadToS3(folder) {
       await s3Client.send(
         new PutObjectCommand({
           Bucket: bucketName,
-          Key: `${key}/${s3Key}`,
+          Key: `${key}5/${s3Key}`,
           Body: fileStream,
           ContentType:
             ext === ".m3u8"
