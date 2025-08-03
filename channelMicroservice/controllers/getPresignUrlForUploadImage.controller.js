@@ -4,7 +4,9 @@ import { getPreSignUrl } from "../helper/presignUrl.helper.js";
 import { randomUUID } from "crypto";
 export async function handleGetPresignUrlForUploadImage(req,reply){
     try {
+        const cache = dataCache.getCache();
         let {fileName,contentType,userId} = req.body;
+        const cacheKey = `` // have to complete it 
         fileName = `${userId}:${randomUUID().replace("-","")}:${encodeURIComponent(fileName)}`;
         const contentTypeArray = contentType.split("/");
         if(contentTypeArray[0] !== "image" || contentTypeArray.length !== 2){

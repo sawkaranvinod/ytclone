@@ -13,10 +13,6 @@ const subscribeSchema = new mongoose.Schema(
             lowercase:true,
             trim:true,
         },
-        subscribe:{
-            type:Boolean,
-            required:true,
-        }
     }
 );
 

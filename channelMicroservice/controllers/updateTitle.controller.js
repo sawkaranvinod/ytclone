@@ -61,7 +61,7 @@ export async function handleUpdateTitle(req, reply) {
             },
         ]);
 
-        const viewDocs = await ViewCount.find({ videoId });
+        const viewDocs = await ViewCount.find({ videoId }).toArray();
         const totalViews = viewDocs.length;
 
         const finalData = {
