@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import {masterRoute} from "./routes/master.route.js";
 import { kafkaProducer } from "./controllers/config/kafkaProducer.config.js";
+import { injectEnvVariables } from "./grpcConfigClinet/env/inject.js";
 
 const fastify = Fastify();
 
@@ -10,6 +11,7 @@ fastify.register(masterRoute,{prefix:"/api/v1"});
 
 ;(async () => {
     try {
+        await injectEnvVariables();
         fastify.listen({PORT},(err,address) => {
             if (err) {
                 fastify.log.error(err);
