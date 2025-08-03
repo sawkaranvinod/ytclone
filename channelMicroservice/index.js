@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import {masterRoute} from "./routes/master.route.js";
 import {injectEnvVariables} from "./grpcConfigClinet/env/inject.js";
+import {envVariable} from "./grpcConfigClinet/env/variable.env.js";
+import {dataCache} from "./config/redis.config.js";
 import {config} from "dotenv";
 config();
 
@@ -14,6 +16,7 @@ const port = process.env.FASTIFY_CHANNEL_MICROSERVICE || 5010;
 ;(async () => {
     try {
         await injectEnvVariables();
+        dataCache.connectRedis(envVariable.redisConfig());
         fastify.listen(
             {port:port},
             (err,address)=>{
