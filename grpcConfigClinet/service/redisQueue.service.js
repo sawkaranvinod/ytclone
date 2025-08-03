@@ -1,8 +1,8 @@
-import {configClient} from "../client/client.js"
+import {configClient} from "../client/client.js";
 
-export  function getAwsCredentials() {
+export  function getRedisQueue() {
     return new Promise((resolve, reject) => {
-        configClient.awsCredentials({}, (err, res) => {
+        configClient.redisQueue({}, (err, res) => {
             if (err) {
                 return reject(err);
             }

@@ -1,24 +1,26 @@
 export class ENV {
     constructor() {
         this.region = null;
-        this.bucketName = null;
+        this.tempBucketName = null;
         this.accessKeyId = null;
         this.secretAccessKey = null;
-
+        this.productionBucketName = null;
+        this.sqsQueueLink = null;
+        this.videoProcessingFaultQueue = null;
+        this.postVideoProcessingQueue = null;
         this.uri = null;
-
         this.port = null;
         this.host = null;
         this.username = null;
         this.password = null;
-
         this.brokers = null;
         this.clientId = null;
     }
 
-    setAwsCredentials({ region, bucketName, accessKeyId, secretAccessKey }) {
+    setAwsCredentials({ region, productionBucketName, tempBucketName, accessKeyId, secretAccessKey }) {
         this.region = region;
-        this.bucketName = bucketName;
+        this.tempBucketName = tempBucketName;
+        this.productionBucketName = productionBucketName;
         this.accessKeyId = accessKeyId;
         this.secretAccessKey = secretAccessKey;
     }
@@ -39,10 +41,20 @@ export class ENV {
         this.clientId = clientId;
     }
 
+    setSqsQueueLink({ queueLink }) {
+        this.sqsQueueLink = queueLink;
+    }
+
+    setRedisQueue({ postVideoProcessingQueue, videoProcessingFaultQueue }) {
+        this.postVideoProcessingQueue = postVideoProcessingQueue;
+        this.videoProcessingFaultQueue = videoProcessingFaultQueue;
+    }
+
     awsCredentials() {
         return {
             region: this.region,
-            bucketName: this.bucketName,
+            tempBucketName: this.tempBucketName,
+            productionBucketName: this.productionBucketName,
             accessKeyId: this.accessKeyId,
             secretAccessKey: this.secretAccessKey
         };
@@ -69,6 +81,20 @@ export class ENV {
             clientId: this.clientId
         };
     }
+
+    sqsQueueLink() {
+        return {
+            sqsQueueLink: this.sqsQueueLink,
+        };
+    }
+
+    redisQueue() {
+        return {
+            videoProcessingFaultQueue: this.videoProcessingFaultQueue,
+            postVideoProcessingQueue: this.postVideoProcessingQueue,
+        }
+    }
+
 }
 
 
