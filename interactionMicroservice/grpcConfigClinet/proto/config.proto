@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package config.videostreame.v1;
+
+service VideoStreaming {
+  rpc awsCredentials (CredentialsRequest) returns (CredentialsResponse);
+  rpc databaseConfig (DatabaseRequest) returns (DatabaseResponse);
+  rpc redisConfig (RedisConfigRequest) returns (RedisConfigResponse);
+  rpc kafkaConfig (KafkaConfigRequest) returns (KafkaConfigResponse);
+  rpc sqsQueueLink (sqsQueueLinkRequest) returns (sqsQueueLinkResponse);
+  rpc redisQueue (redisQueueRequest) returns (redisQueueResponse);
+}
+
+message CredentialsRequest {};
+
+message CredentialsResponse {
+  string region = 1;
+  string tempBucketName = 2;
+  string accessKeyId = 3;
+  string secretAccessKey = 4;
+  string productionBucketName = 5;
+};
+
+message DatabaseRequest {};
+
+message DatabaseResponse { 
+  string uri = 1;
+};
+
+message RedisConfigRequest {};
+
+message RedisConfigResponse {
+  int32 port = 1;
+  string host = 2;
+  string username = 3;
+  string password = 4;
+};
+
+message KafkaConfigRequest {};
+
+message KafkaConfigResponse {
+  repeated string brokers = 1;
+  string clientId = 2;
+};
+
+message sqsQueueLinkRequest {};
+
+message sqsQueueLinkResponse {
+  string queueLink = 1;
+};
+
+message redisQueueRequest {};
+
+message redisQueueResponse {
+  string videoProcessingFaultQueue = 1;
+  string postVideoProcessingQueue =2;
+}

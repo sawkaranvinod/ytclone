@@ -20,6 +20,6 @@ export async function handleViews(req,reply) {
         })
         replyHandler(reply,200,"success");
     } catch (error) {
-        console.log(error.message);
+        console.log(error.messages);
     }
 }
