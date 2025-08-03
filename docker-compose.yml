@@ -31,8 +31,20 @@ services:
     volumes:
       - redpanda-data:/var/lib/redpanda/data
 
-  
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    ports:
+      - "7700:7700"
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=development
+    volumes:
+      - meili-data:/data.ms
+
 
 volumes:
   redis-data:
   redpanda-data:
+  meili-data:

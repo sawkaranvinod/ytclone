@@ -1,7 +1,7 @@
 import { ReceiveMessageCommand } from "@aws-sdk/client-sqs";
 
 
-export function reciveMessageCommand(queueLink) {
+export function getReciveMessageCommand(queueLink) {
     return new ReceiveMessageCommand(
         {
             QueueUrl:queueLink,

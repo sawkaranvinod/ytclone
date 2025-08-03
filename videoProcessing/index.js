@@ -4,6 +4,7 @@ import path from "node:path";
 import { createWriteStream, createReadStream } from "node:fs";
 import ffmpeg from "fluent-ffmpeg";
 import { config } from "dotenv";
+import {dataCache} from "./config/redis.config.js";
 config();
 
 const s3Client = new S3Client({
@@ -14,7 +15,8 @@ const s3Client = new S3Client({
   },
 });
 
-const bucketName = "chilandu";
+const tempBucket = process.env.AWS_TEMP_BUCKET_NAME;
+const productionBucket = process.env.AWS_PRODUCTION_BUCKET_NAME;
 const key = process.env.KEY;
 
 const RESOLUTIONS = [
@@ -37,7 +39,7 @@ function getEstimatedBandwidth(height) {
 async function downloadOriginalVideo(localPath) {
   console.log("⏬ Downloading from S3...");
   await fs.mkdir(path.dirname(localPath), { recursive: true });
-  const command = new GetObjectCommand({ Bucket: bucketName, Key: key });
+  const command = new GetObjectCommand({ Bucket: tempBucket, Key: key });
   const data = await s3Client.send(command);
   const writeStream = createWriteStream(localPath);
   await new Promise((resolve, reject) => {
@@ -121,8 +123,8 @@ async function uploadToS3(folder) {
 
       await s3Client.send(
         new PutObjectCommand({
-          Bucket: bucketName,
-          Key: `${key}5/${s3Key}`,
+          Bucket: productionBucket,
+          Key: `${key}/${s3Key}`,
           Body: fileStream,
           ContentType:
             ext === ".m3u8"
@@ -139,16 +141,18 @@ async function uploadToS3(folder) {
 }
 
 (async () => {
+  dataCache.connectRedis({port:process.env.REDIS_PORT,host:process.env.REDIS_HOST,username:process.env.REDIS_USERNAME,password:process.env.REDIS_PASSWORD});
+  const cache = dataCache.getCache();
   try {
     const originalPath = path.join("output", "original.mp4");
-
     await downloadOriginalVideo(originalPath);
     const variants = await generateVariants(originalPath);
     await generateMasterPlaylist(variants);
     await uploadToS3("output");
-
+    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
     console.log("✅ ABR encoding & upload complete.");
   } catch (err) {
     console.error("❌ Error:", err);
+    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
   }
 })();
