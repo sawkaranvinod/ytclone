@@ -1,9 +1,10 @@
 import { injectEnvVariables } from "./grpcConfigClinet/env/inject.js";
 import { processMessageFromSqs } from "./main.js";
-import { createSqsClient } from "./command/client.js";
-
+import {dataCache} from "./config/redis.config.js";
+import {envVariable} from "./grpcConfigClinet/env/variable.env.js";
 ;(async () => {
     await injectEnvVariables();
-    global.sqsClient = createSqsClient(); // set after env injection
     await processMessageFromSqs();
+    dataCache.connectRedis(envVariable.redisConfig);
+    
 })();

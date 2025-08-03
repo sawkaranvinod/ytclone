@@ -9,7 +9,7 @@ export function uploadVideoRoute(fastify,opts) {
             schema:{
                 body: {
                     type: "object",
-                    required: ["fileName","contentType","duration"],
+                    required: ["fileName","contentType","duration","description","title","region"],
                     properties: {
                         fileName: { 
                             type: "string",
@@ -19,7 +19,16 @@ export function uploadVideoRoute(fastify,opts) {
                         },
                         duration:{
                             type:"string",
-                        }
+                        },
+                        description:{
+                            type:"string",
+                        },
+                        title:{
+                            type:"string",
+                        },
+                        region:{
+                            type:"string",
+                        },
                     },
                 },
                 response: {

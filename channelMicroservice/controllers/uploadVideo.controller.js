@@ -2,11 +2,13 @@ import {replyHandler500,replyHandler200,replyHandler400} from "../helper/reply.h
 import {getPreSignUrl} from "../helper/presignUrl.helper.js";
 import { randomUUID } from "crypto";
 import {envVariable} from "../grpcConfigClinet/env/variable.env.js";
+import {dataCache} from "../config/redis.config.js";
 
 export async function handleUploadVideo(req,reply) {
     try {
-        let {fileName,userId,contentType,duration} = req.body;
-        fileName = `${duration}:${randomUUID().replace("-","")}:${userId}:${fileName}`;
+        const cache = dataCache.getCache();
+        let {fileName,userId,contentType,duration,description,title,region} = req.body;
+        fileName = `${duration.replace(":","")}:${randomUUID().replace("-","")}:${encodeURIComponent(fileName)}`;
         contentType = contentType.split("/");
         if (contentType.length !== 2 || contentType[0] !== "video") {
             return replyHandler400(reply,"unacceptable content type");
@@ -15,6 +17,7 @@ export async function handleUploadVideo(req,reply) {
         if (!url) {
             return replyHandler500(reply);
         };
+        await cache.set(`processingVideo:${fileName}`,JSON.stringify({userId,description,title,region}),"EX",300);
         return replyHandler200(reply,"sucess",{url});
     } catch (error) {
         console.log("error in the main handler function of the upload video",error.message);

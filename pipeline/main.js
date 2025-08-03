@@ -1,10 +1,12 @@
-import { createSqsClient } from "./command/client.js";
-import { deleteMessageCommand } from "./command/deleteMessage.js";
+import { createSqsClient } from "./helpers/client.js";
+import { deleteMessageCommand } from "./helpers/deleteMessage.js";
 import { envVariable } from "./grpcConfigClinet/env/variable.env.js";
 import { ReceiveMessageCommand } from "@aws-sdk/client-sqs";
+import {dataCache} from "./config/redis.config.js";
 
 export async function processMessageFromSqs() {
     try {
+        const cache = dataCache.getCache();
         const sqsClient = createSqsClient(envVariable.region,envVariable.accessKeyId,envVariable.secretAccessKey);
         const reciveMessageCommand = new ReceiveMessageCommand({
             QueueUrl: envVariable.sqsQueueLink,
@@ -20,8 +22,8 @@ export async function processMessageFromSqs() {
                 continue;
             }
             for (const message of messages) {
-                console.log("Received message:", message.Body);
-                // Delete the message after processing
+                const body = message.Body;
+                const object = body.Object;
                 const deleteCmd = deleteMessageCommand(envVariable.sqsQueueLink,message);
                 await sqsClient.send(deleteCmd);
                 console.log("Deleted message:", message.MessageId);
