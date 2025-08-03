@@ -1,5 +1,5 @@
-import { handleViews } from "../controllers/views.controllers";
-import { viewMiddleware } from "../middlewares/views.middleware";
+import { handleViews } from "../controllers/views.controllers.js";
+import {viewsMiddleware} from "../middlewares/views.middleware.js";
 
 export function viewRoute(fastify,opts) {
     fastify.route(
@@ -51,8 +51,8 @@ export function viewRoute(fastify,opts) {
                     },
                 },
             },
-            preHandler:viewMiddleware(),
-            handler:handleViews(),
+            preHandler:viewsMiddleware,
+            handler:handleViews,
         }
     )
 }

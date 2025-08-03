@@ -1,6 +1,6 @@
-import { deepSanitize } from "../helper/sanitize.helper";
+import { deepSanitize } from "../helper/sanitize.helper.js";
 
-export const viewMiddleware = (req, reply, done) => {
+export function viewsMiddleware(req,reply,done) {
     req.body.videoId = deepSanitize(req.body.videoId);
-    return done();
-};
+    done();
+}

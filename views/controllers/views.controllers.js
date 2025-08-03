@@ -1,10 +1,10 @@
-import { kafkaProducer } from "./config/kafkaProducer.config.js";
+import {kafkaProducer} from "../config/kafkaProducer.config.js";
 import { replyHandler } from "../helper/reply.helper.js";
 
 export async function handleViews(req,reply) {
     try {
 
-        const producer = kafkaProducer();
+        const producer = kafkaProducer.getKafkaProducer();
         const {videoId,userId} = req.body;
     
         await producer.send({

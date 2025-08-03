@@ -1,7 +1,8 @@
 import Fastify from "fastify";
 import {masterRoute} from "./routes/master.route.js";
-import { kafkaProducer } from "./controllers/config/kafkaProducer.config.js";
+import { kafkaProducer } from "./config/kafkaProducer.config.js";
 import { injectEnvVariables } from "./grpcConfigClinet/env/inject.js";
+import { envVariable } from "./grpcConfigClinet/env/variable.env.js";
 
 const fastify = Fastify();
 
@@ -12,7 +13,8 @@ fastify.register(masterRoute,{prefix:"/api/v1"});
 ;(async () => {
     try {
         await injectEnvVariables();
-        fastify.listen({PORT},(err,address) => {
+        kafkaProducer.setKafkaProducer(envVariable.clientId,envVariable.brokers);
+        fastify.listen({port:PORT},(err,address) => {
             if (err) {
                 fastify.log.error(err);
                 process.exit(1);
@@ -22,6 +24,7 @@ fastify.register(masterRoute,{prefix:"/api/v1"});
         })
     } catch (error) {
         console.log(error.message)
+        kafkaProducer.disconnect();
     }
 })()
 

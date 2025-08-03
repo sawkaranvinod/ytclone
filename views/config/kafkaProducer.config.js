@@ -1,17 +1,24 @@
-import { client } from "./kafka.config.js";
+import { getKafkaClient } from "./kafka.config.js";
 
 class KafkaProdcuer{
     constructor(){
-        this.producer = client.producer();
+        this.producer = null;
     }
 
     getKafkaProducer(){
         return this.producer;
     }
 
+    setKafkaProducer(clientId,brokers){
+        this.producer = getKafkaClient(clientId,brokers).producer();
+    }
     async connect(){
         await this.producer.connect();
     }
+
+    async disconnect(){
+        this.producer.disconnect();
+    }
 }
 
-export const kafkaProducer = new KafkaProdcuer();
+export let kafkaProducer = new KafkaProdcuer();

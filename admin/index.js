@@ -1,30 +1,15 @@
-import { Kafka } from "kafkajs";
+import { createTopic } from "./admin.kafka.js";
+import { kafkaConfig } from "./config/kafka.config.js";
+import { kafkaAdmin } from "./config/kafkaAdmin.config.js";
+import {injectEnvVariables} from "./grpcConfigClinet/env/inject.js";
+import {envVariable} from "./grpcConfigClinet/env/variable.env.js"
 
-const client = new Kafka({
-    clientId : "my-app",
-    brokers: ["localhost:19092"],
-});
-
-async function adminInit(){
-
-    const admin = client.admin();
-    await admin.connect()
-
-    await admin.createTopics({
-        topics: [
-            {
-                topic: "views",
-                numPartitions: 3
-            },{
-                topic: "reactions",
-                numPartitions: 3
-            },{
-                topic: "subscribes",
-                numPartitions: 3
-            }
-        ]
-    })
-
-    await admin.disconnect();
-}
-adminInit();
+;(async () => {
+    await injectEnvVariables();
+    // console.log(envVariable);
+    kafkaAdmin.setKafkaClient(envVariable.clientId,envVariable.brokers);
+    await kafkaAdmin.connectKafkaAdmin();
+    // await createTopic();
+    await kafkaAdmin.listAllTopics();
+    await kafkaAdmin.disconnectKafkaAdmin();
+})()

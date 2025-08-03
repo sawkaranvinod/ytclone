@@ -1,11 +1,10 @@
 import { Kafka } from "kafkajs";
-import {envVariable} from "../grpcConfigClinet/env/variable.env.js"
 
-export function getKafkaClient() {
+export function getKafkaClient(clientId,brokers) {
     return new Kafka(
         {
-            clientId:envVariable.clientId,
-            brokers:envVariable.brokers
+            clientId:clientId,
+            brokers:brokers
         }
     )
 }
