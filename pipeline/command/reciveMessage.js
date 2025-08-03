@@ -1,6 +1,12 @@
 import { ReceiveMessageCommand } from "@aws-sdk/client-sqs";
 
-export const reciveMessageCommand = new ReceiveMessageCommand({
-    MaxNumberOfMessages: 1,
-    WaitTimeSeconds: 1
-});
+
+export function reciveMessageCommand(queueLink) {
+    return new ReceiveMessageCommand(
+        {
+            QueueUrl:queueLink,
+            MaxNumberOfMessages:1,
+            WaitTimeSeconds:1,
+        }
+    )
+};
