@@ -1,0 +1,3 @@
+import {MeiliSearch} from "meilisearch";
+
+

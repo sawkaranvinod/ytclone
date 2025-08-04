@@ -11,4 +11,4 @@ import {consumeMessageFromQueue} from "./main.js";
         console.log("error in the main index file of the video processing fault quqeue worker",error.message);
         process.exit(-1);
     }
-})
+})();
