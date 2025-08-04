@@ -1,5 +1,5 @@
 import {handleGetPresignUrlForUploadImage} from "../controllers/getPresignUrlForUploadImage.controller.js"
-import {getPresignUrlFOrUploadImageMiddleware} from "../middlewares/getPresignUrlForUploadImage.middleware.js"
+import {getPresignUrlForUploadImageMiddleware} from "../middlewares/getPresignUrlForUploadImage.middleware.js"
 
 export function getPresignUrlForUploadImageRoute(fastify,opts) {
     fastify.route(
@@ -62,7 +62,7 @@ export function getPresignUrlForUploadImageRoute(fastify,opts) {
                     },
                 },
             },
-            preHandler:getPresignUrlFOrUploadImageMiddleware,
+            preHandler:getPresignUrlForUploadImageMiddleware,
             handler:handleGetPresignUrlForUploadImage,
         }
     )
