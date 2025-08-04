@@ -15,6 +15,9 @@ export class ENV {
         this.password = null;
         this.brokers = null;
         this.clientId = null;
+        this.hmacKey = null;
+        this.meiliSearchHost = null;
+        this.meiliSearchApiKey = null;
     }
 
     setAwsCredentials({ region, productionBucketName, tempBucketName, accessKeyId, secretAccessKey }) {
@@ -48,6 +51,15 @@ export class ENV {
     setRedisQueue({ postVideoProcessingQueue, videoProcessingFaultQueue }) {
         this.postVideoProcessingQueue = postVideoProcessingQueue;
         this.videoProcessingFaultQueue = videoProcessingFaultQueue;
+    }
+
+    setMeiliSearch({host,apikey}){
+        this.meiliSearchHost = host;
+        this.meiliSearchApiKey = apikey;
+    }
+    
+    setHmacKey({hmacKey}){
+        this.hmacKey = hmacKey;
     }
 
     awsCredentials() {
@@ -98,4 +110,4 @@ export class ENV {
 }
 
 
-export const envVariable = new ENV();
+export let envVariable = new ENV();

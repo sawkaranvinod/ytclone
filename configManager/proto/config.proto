@@ -9,6 +9,8 @@ service VideoStreaming {
   rpc kafkaConfig (KafkaConfigRequest) returns (KafkaConfigResponse);
   rpc sqsQueueLink (sqsQueueLinkRequest) returns (sqsQueueLinkResponse);
   rpc redisQueue (redisQueueRequest) returns (redisQueueResponse);
+  rpc meiliSearchConfig (meiliSearchConfigRequest) returns (meiliSearchConfigResponse);
+  rpc hmacKey (hmacKeyRequest) returns (hmacKeyResponse);
 }
 
 message CredentialsRequest {};
@@ -54,4 +56,17 @@ message redisQueueRequest {};
 message redisQueueResponse {
   string videoProcessingFaultQueue = 1;
   string postVideoProcessingQueue =2;
-}
+};
+
+message meiliSearchConfigRequest {};
+
+message meiliSearchConfigResponse {
+  string host =1;
+  string apiKey = 2;
+};
+
+message hmacKeyRequest {};
+
+message hmacKeyResponse {
+  string hmacKey = 1;
+};
