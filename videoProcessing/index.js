@@ -4,7 +4,7 @@ import path from "node:path";
 import { createWriteStream, createReadStream } from "node:fs";
 import ffmpeg from "fluent-ffmpeg";
 import { config } from "dotenv";
-import {dataCache} from "./config/redis.config.js";
+// import {dataCache} from "./config/redis.config.js";
 config();
 
 const s3Client = new S3Client({
@@ -141,18 +141,18 @@ async function uploadToS3(folder) {
 }
 
 (async () => {
-  dataCache.connectRedis({port:process.env.REDIS_PORT,host:process.env.REDIS_HOST,username:process.env.REDIS_USERNAME,password:process.env.REDIS_PASSWORD});
-  const cache = dataCache.getCache();
+  // dataCache.connectRedis({port:process.env.REDIS_PORT,host:process.env.REDIS_HOST,username:process.env.REDIS_USERNAME,password:process.env.REDIS_PASSWORD});
+  // const cache = dataCache.getCache();
   try {
     const originalPath = path.join("output", "original.mp4");
     await downloadOriginalVideo(originalPath);
     const variants = await generateVariants(originalPath);
     await generateMasterPlaylist(variants);
     await uploadToS3("output");
-    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
+    // await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
     console.log("✅ ABR encoding & upload complete.");
   } catch (err) {
     console.error("❌ Error:", err);
-    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
+    // await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
   }
 })();
