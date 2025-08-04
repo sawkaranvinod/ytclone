@@ -7,7 +7,6 @@ export async function consumeMessageFromQueue() {
         while (true) {
             const key = await cache.rpop(`${envVariable.videoProcessingFaultQueue}`);
             if (!key) {
-                console.log("no message recived");
                 continue;
             }
             try {
