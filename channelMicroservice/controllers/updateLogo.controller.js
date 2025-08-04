@@ -5,7 +5,7 @@ import {dataCache} from "../config/redis.config.js";
 import { envVariable } from "../grpcConfigClinet/env/variable.env.js";
 import {checkObjectInS3} from "../helper/checkObjectInS3.helper.js"
 import { Video } from "../schema/video.model.js";
-export async function handleUpdateCoverImage(req,reply){
+export async function handleUpdateLogo(req,reply){
 
     try {
         const cache = dataCache.getCache();

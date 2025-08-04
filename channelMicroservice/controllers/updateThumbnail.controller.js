@@ -1,15 +1,28 @@
 import { dataCache } from "../config/redis.config.js";
+import { envVariable } from "../grpcConfigClinet/env/variable.env.js";
 import { replyHandler200, replyHandler400, replyHandler500 } from "../helper/reply.helper.js";
 import { Reaction } from "../schema/reaction.modle.js";
 import { Video } from "../schema/video.model.js";
 import { ViewCount } from "../schema/viewCount.modle.js";
 
-export async function handleUpdateTitle(req, reply) {
+export async function handleUpdateThubnail(req, reply) {
     try {
         const cache = dataCache.getCache();
-        const { videoId, description } = req.body;
-
+        const { videoId } = req.body;
         const cacheKey = `video:${videoId}`;
+
+        const url = await cache.get(cacheKey);
+
+        if(!url){
+            return replyHandler400(reply,"Invalid request or url not found")
+        }
+
+        const checkImage = await checkObjectInS3(envVariable.region,envVariable.accessKeyId,envVariable.secretAccessKey,envVariable.productionBucketName,url);
+
+        if(!checkImage){
+            return replyHandler400(reply,"invalid request or image not found");
+        }
+
         const oldVideoDataFromCache = await cache.get(cacheKey);
         let oldVideoDataFromDb = null;
 
@@ -22,7 +35,7 @@ export async function handleUpdateTitle(req, reply) {
 
         const updatedVideo = await Video.findByIdAndUpdate(
             videoId,
-            { $set: { description } },
+            { $set: { thumbnaiUrl : url} },
             { new: true }
         );
 
@@ -32,7 +45,7 @@ export async function handleUpdateTitle(req, reply) {
                 cacheKey,
                 JSON.stringify({
                     ...oldData,
-                    title: updatedVideo.description,
+                    thumbnaiUrl: updatedVideo.thumbnaiUrl,
                 })
             );
         }

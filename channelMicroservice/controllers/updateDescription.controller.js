@@ -4,7 +4,7 @@ import { Reaction } from "../schema/reaction.modle.js";
 import { Video } from "../schema/video.model.js";
 import { ViewCount } from "../schema/viewCount.modle.js";
 
-export async function handleUpdateTitle(req, reply) {
+export async function handleUpdateDescription(req, reply) {
     try {
         const cache = dataCache.getCache();
         const { videoId, description } = req.body;
