@@ -16,6 +16,7 @@ const videoSchema = new mongoose.Schema(
         },
         thumbnaiUrl: {
             type: String,
+            default:""
         },
         videoUrl: {
             type: String,
@@ -27,7 +28,7 @@ const videoSchema = new mongoose.Schema(
             lowercase:true,
             trim:true,
         },
-        categroy: [],
+        category: [],
         region:{
             type:String,
             lowercase:true,

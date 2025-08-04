@@ -6,7 +6,7 @@ import {getSqsQueueLink} from "../service/sqsQueueLink.service.js";
 import {getRedisQueue} from "../service/redisQueue.service.js";
 import {envVariable } from "./variable.env.js";
 import {getHmacKey} from "../service/hmacKey.service.js";
-import {getMeiliSearchConfig, getMeiliSearchConfig} from "../service/meiliSearch.service.js";
+import {getMeiliSearchConfig} from "../service/meiliSearch.service.js";
 
 export async function injectEnvVariables() {
     try {

@@ -1,11 +1,10 @@
-import { createSqsClient,createS3Client } from "./helpers/client.helper.js";
+import { createSqsClient} from "./helpers/client.helper.js";
 import { deleteMessageCommand } from "./helpers/deleteMessage.helper.js";
 import { envVariable } from "./grpcConfigClinet/env/variable.env.js";
 import { getReciveMessageCommand } from "./helpers/reciveMessage.helper.js";
 import {dataCache} from "./config/redis.config.js";
-import {envVariable} from "./grpcConfigClinet/env/variable.env.js";
 import {getDeleteObjectCommand} from "./helpers/deleteObjectCommand.helper.js";
-import {runDockerContainer} from "./container/run.container.js";
+import {runContainer} from "./container/run.container.js";
 
 export async function processMessageFromSqs() {
     try {
@@ -30,10 +29,9 @@ export async function processMessageFromSqs() {
                         await s3Client.send(deleteObjectCommand);
                     };
                     await cache.persist(`processingVideo:${body.s3.object.key}`);
-                    const variable = [`AWS_ACCESS_KEY_ID=${envVariable.accessKeyId}`,`AWS_SECRET_ACCESS_KEY=${envVariable.secretAccessKey}`,`KEY=${body.s3.object.key}`,`AWS_TEMP_BUCKET_NAME=${body.s3.bucket.name}`,`AWS_PRODUCTION_BUCKET_NAME=${envVariable.productionBucketName}`];
                     const imageName = `videoprocessing:latest`;
-                    const containerName = body.s3.object.key;
-                    await runDockerContainer(variable,imageName,containerName);
+                    const container = runContainer(envVariable.accessKeyId,envVariable.secretAccessKey,envVariable.region,body.s3.object.key,envVariable.tempBucketName,envVariable.productionBucketName,`${envVariable.port}`,'host.docker.internal',envVariable.username,envVariable.password,envVariable.videoProcessingFaultQueue,envVariable.postVideoProcessingQueue,imageName);
+                    container.unref();
                     const deleteCmd = deleteMessageCommand(envVariable.sqsQueueLink,message);
                     await sqsClient.send(deleteCmd);
                     console.log("Deleted message:", message.MessageId);

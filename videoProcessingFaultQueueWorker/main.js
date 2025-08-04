@@ -1,22 +1,20 @@
 import { envVariable } from "./grpcConfigClinet/env/variable.env.js";
 import { dataCache } from "./config/redis.config.js";
-import {runDockerContainer} from "./container/run.container.js";
+import {runContainer} from "./container/run.container.js";
 export async function consumeMessageFromQueue() {
     try {
         const cache = dataCache.getCache();
         while (true) {
+            const key = await cache.rpop(`${envVariable.videoProcessingFaultQueue}`);
+            if (!key) {
+                continue;
+            }
             try {
-                const key = await cache.rpop(`${envVariable.videoProcessingFaultQueue}`);
-                if (!key) {
-                    console.log("no message recived");
-                    continue;
-                }
-                const variable = [`AWS_ACCESS_KEY_ID=${envVariable.accessKeyId}`, `AWS_SECRET_ACCESS_KEY=${envVariable.secretAccessKey}`, `KEY=${key}`, `AWS_TEMP_BUCKET_NAME=${envVariable.tempBucketName}`, `AWS_PRODUCTION_BUCKET_NAME=${envVariable.productionBucketName}`];
                 const imageName = `videoprocessing:latest`;
-                const containerName = key;
-                await runDockerContainer(variable, imageName, containerName);
-
+                const container = runContainer(envVariable.accessKeyId,envVariable.secretAccessKey,envVariable.region,key,envVariable.tempBucketName,envVariable.productionBucketName,`${envVariable.port}`,'host.docker.internal',envVariable.username,envVariable.password,envVariable.videoProcessingFaultQueue,envVariable.postVideoProcessingQueue,imageName);
+                container.unref();
             } catch (error) {
+                await cache.lpush(envVariable.videoProcessingFaultQueue,key);
                 console.log("error in the infinite loop video processing fault queue worker", error.message);
             }
         }
