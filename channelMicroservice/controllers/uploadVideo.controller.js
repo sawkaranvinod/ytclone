@@ -8,7 +8,8 @@ export async function handleUploadVideo(req,reply) {
     try {
         const cache = dataCache.getCache();
         let {fileName,userId,contentType,duration,description,title,region} = req.body;
-        fileName = `${duration.replace(":","")}:${randomUUID().replace("-","")}:${encodeURIComponent(fileName)}`;
+        const random = randomUUID().replaceAll("-","");
+        fileName = encodeURIComponent(`${duration.replace(":","")}:${random}:${fileName}`);
         contentType = contentType.split("/");
         if (contentType.length !== 2 || contentType[0] !== "video") {
             return replyHandler400(reply,"unacceptable content type");
