@@ -1,3 +1,0 @@
-import {MeiliSearch} from "meilisearch";
-
-

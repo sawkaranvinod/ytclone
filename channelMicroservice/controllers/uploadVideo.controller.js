@@ -7,7 +7,7 @@ import {dataCache} from "../config/redis.config.js";
 export async function handleUploadVideo(req,reply) {
     try {
         const cache = dataCache.getCache();
-        let {fileName,userId,contentType,duration,description,title,region} = req.body;
+        let {fileName,userId,contentType,duration,description,title,region,category} = req.body;
         const random = randomUUID().replaceAll("-","");
         fileName = encodeURIComponent(`${duration.replace(":","")}:${random}:${fileName}`);
         contentType = contentType.split("/");
@@ -18,7 +18,7 @@ export async function handleUploadVideo(req,reply) {
         if (!url) {
             return replyHandler500(reply);
         };
-        await cache.set(`processingVideo:${fileName}`,JSON.stringify({userId,description,title,region}),"EX",300);
+        await cache.set(`processingVideo:${fileName}`,JSON.stringify({userId,description,title,region,category,channelId}),"EX",300);
         return replyHandler200(reply,"sucess",{url});
     } catch (error) {
         console.log("error in the main handler function of the upload video",error.message);
