@@ -11,6 +11,7 @@ export function uploadVideoMiddleware(req, reply, done) {
         region: deepSanitize(req.body.region),
         category: deepSanitize(req.body.category),
         userId: "theuserid",
+        channelId: deepSanitize(req.body.channelId),
     };
     if (!sanitizedInput.contentType || !sanitizedInput.duration || !sanitizedInput.fileName || !sanitizedInput.description || !sanitizedInput.title || !sanitizedInput.region || !sanitizedInput.category) {
         return replyHandler400(reply, "insufficient data");
