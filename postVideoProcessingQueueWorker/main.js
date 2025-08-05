@@ -20,19 +20,27 @@ export async function consumeMessageQueue() {
                     continue;
                 };
                 data = JSON.parse(data);
-                const video = await Video.create(
-                    {
-                        channelId: data.channelId,
-                        videoUrl: `https://${envVariable.productionBucketName}.s3.${envVariable.region}.amazonaws.com/${encodeURIComponent(key)}/master.m3u8`,
-                        description: data.description,
-                        title: data.title,
-                        categroy: data.category,
-                        region: data.region,
-                    }
-                );
-                const add = await addData("video", [data]);
+                const video = await Video.create({
+                    channelId: data.channelId,
+                    videoUrl: `https://${envVariable.productionBucketName}.s3.${envVariable.region}.amazonaws.com/${encodeURIComponent(key)}/master.m3u8`,
+                    description: data.description,
+                    title: data.title,
+                    category: data.category, // fix typo
+                    region: data.region,
+                });
+                const videoObj = {
+                    _id:video._id.toString(),
+                    title:video.title,
+                    videoUrl:video.videoUrl,
+                    description:video.description,
+                    channelId:video.channelId,
+                    category:video.category,
+                    region:video.region,
+                    thumbmaiUrl:video.thumbnaiUrl,
+                }; // convert to plain object
+                const add = await addData("video",[videoObj],envVariable.meiliSearchHost,envVariable.meiliSearchApiKey);
                 if (!add) {
-                    await addData("video", data);
+                    await addData("video", [data]);
                 };
                 await cache.set(`video:${video._id}`, JSON.stringify({
                     channelId: data.channelId,

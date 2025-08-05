@@ -53,9 +53,9 @@ export class ENV {
         this.videoProcessingFaultQueue = videoProcessingFaultQueue;
     }
 
-    setMeiliSearch({host,apikey}){
+    setMeiliSearch({host,apiKey}){
         this.meiliSearchHost = host;
-        this.meiliSearchApiKey = apikey;
+        this.meiliSearchApiKey = apiKey;
     }
     
     setHmacKey({hmacKey}){

@@ -1,12 +1,25 @@
-import {getClient} from "../database/meiliSearch.connect.js";
+import { MeiliSearch } from "meilisearch";
 
-export async function addData(modle,document) {
+export async function addData(modle, document, host, apiKey) {
     try {
-        const index = getClient().index(modle);
-        await index.addDocuments(document);
-        return true;
+        if (!host || !apiKey) {
+            throw new Error("MeiliSearch host or apiKey is undefined");
+        }
+        
+        const client = new MeiliSearch({ host, apiKey });
+        const index = client.index(modle);
+        
+        try {
+            // Add documents and wait for operation to complete
+            const response = await index.addDocuments(document, { primaryKey: '_id' });
+            console.log("data inserted successfully");
+            return true;
+        } catch (taskError) {
+            console.error("Task failed:", taskError.message);
+            return false;
+        }
     } catch (error) {
-        console.log("error in adding document in meili search",error.message);
+        console.log("error in adding document in meili search", error.message);
         return false;
     }
 }

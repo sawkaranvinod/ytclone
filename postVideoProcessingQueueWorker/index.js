@@ -8,7 +8,7 @@ import {connectMeiliSearch} from "./database/meiliSearch.connect.js";
     try {
         await injectEnvVariables();
         await connectDB(envVariable.uri)
-        await connectMeiliSearch(envVariable.meiliSearchHost,envVariable.meiliSearchApiKey);
+        connectMeiliSearch(envVariable.meiliSearchHost,envVariable.meiliSearchApiKey);
         dataCache.connectRedis(envVariable.redisConfig);
         await consumeMessageQueue()
     } catch (error) {

@@ -18,6 +18,7 @@ export async function injectEnvVariables() {
         const redisQueue = await getRedisQueue();
         const hmacKey = await getHmacKey();
         const meiliSearchConfig = await getMeiliSearchConfig();
+        console.log(meiliSearchConfig)
         envVariable.setAwsCredentials(awsCredentials);
         envVariable.setDatabaseConfig(databaseConfig);
         envVariable.setRedisConfig(redisConfig);
