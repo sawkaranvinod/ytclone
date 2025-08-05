@@ -201,6 +201,7 @@ async function uploadToS3(folder) {
     await generateMasterPlaylist(variants);
 
     // Upload to S3
+    fs.unlink(originalPath,()=>{})
     await uploadToS3("output");
 
     // Push job to Redis and delete temp file

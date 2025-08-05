@@ -14,7 +14,6 @@ export async function handleUploadVideo(req,reply) {
         if (contentType.length !== 2 || contentType[0] !== "video") {
             return replyHandler400(reply,"unacceptable content type");
         };
-        console.log(fileName);
         const url = await getPreSignUrl(fileName,contentType,envVariable.tempBucketName,envVariable.region,envVariable.accessKeyId,envVariable.secretAccessKey);
         if (!url) {
             return replyHandler500(reply);
