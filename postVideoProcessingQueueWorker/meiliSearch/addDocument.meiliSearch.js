@@ -1,8 +1,8 @@
-import {client} from "../database/meiliSearch.connect.js";
+import {getClient} from "../database/meiliSearch.connect.js";
 
 export async function addData(modle,document) {
     try {
-        const index = client.index(modle);
+        const index = getClient().index(modle);
         await index.addDocuments(document);
         return true;
     } catch (error) {
