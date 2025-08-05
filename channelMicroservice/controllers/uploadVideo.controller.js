@@ -7,13 +7,14 @@ import {dataCache} from "../config/redis.config.js";
 export async function handleUploadVideo(req,reply) {
     try {
         const cache = dataCache.getCache();
-        let {fileName,userId,contentType,duration,description,title,region,category} = req.body;
+        let {fileName,userId,contentType,duration,description,title,region,category,channelId} = req.body;
         const random = randomUUID().replaceAll("-","");
-        fileName = encodeURIComponent(`${duration.replace(":","")}:${random}:${fileName}`);
+        fileName = `${duration.replace(":","")}:${random}:${encodeURIComponent(fileName)}`;
         contentType = contentType.split("/");
         if (contentType.length !== 2 || contentType[0] !== "video") {
             return replyHandler400(reply,"unacceptable content type");
         };
+        console.log(fileName);
         const url = await getPreSignUrl(fileName,contentType,envVariable.tempBucketName,envVariable.region,envVariable.accessKeyId,envVariable.secretAccessKey);
         if (!url) {
             return replyHandler500(reply);

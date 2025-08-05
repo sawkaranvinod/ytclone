@@ -13,7 +13,8 @@ class RedisCache{
                 username,
                 password,
             }
-        )
+        );
+        console.log("redis connected")
     }
     getCache(){
         return this.redis;

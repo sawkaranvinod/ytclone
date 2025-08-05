@@ -5,12 +5,14 @@ import { Video } from "./schema/video.model.js";
 export async function consumeMessageQueue() {
     try {
         const cache = dataCache.getCache();
-        console.log("ere")
         while (true) {
             const key = await cache.rpop(`${envVariable.postVideoProcessingQueue}`);
             if (!key) {
                 continue;
             };
+            if (key) {
+                console.log(key);
+            }
             let data = await cache.get(`processingVideo:${key}`);
             if (!data) {
                 console.log("no message recived");

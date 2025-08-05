@@ -8,11 +8,11 @@ import {runContainer} from "./container/run.container.js";
 
 export async function processMessageFromSqs() {
     try {
-        const cache = dataCache.getCache();
         const sqsClient = createSqsClient(envVariable.region,envVariable.accessKeyId,envVariable.secretAccessKey);
         const reciveMessageCommand = getReciveMessageCommand(envVariable.sqsQueueLink);
-
+        
         while (true) {
+            const cache = dataCache.getCache();
             try {
                 const response = await sqsClient.send(reciveMessageCommand);
                 const messages = response.Messages;
@@ -36,6 +36,7 @@ export async function processMessageFromSqs() {
                         console.log("Invalid message format, missing s3.object.key:", body);
                         continue;
                     }
+                    await cache.persist(`processingVideo:${decodeURIComponent(objectKey)}`);
                     // Now you can safely access objectKey
                     const imageName = `videoprocessing:latest`;
                     const container = runContainer(

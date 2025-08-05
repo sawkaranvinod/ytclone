@@ -1,33 +1,18 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { Agent } from "https";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createWriteStream, createReadStream } from "node:fs";
 import ffmpeg from "fluent-ffmpeg";
 import { config } from "dotenv";
-import pLimit from "p-limit";
-import { dataCache } from "./config/redis.config.js";
-import { getDeleteObjectCommand } from "./helpers/deleteObjectCommandS3.helper.js";
-
+import {dataCache} from "./config/redis.config.js";
+import {getDeleteObjectCommand} from "./helpers/deleteObjectCommandS3.helper.js"
 config();
-
-// Enable keep-alive agent
-const agent = new Agent({ keepAlive: true, maxSockets: 50 });
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-  // Enable connection reuse
-  requestHandler: {
-    handle: (request, options) => {
-      return fetch(request, {
-        ...options,
-        dispatcher: agent,
-      });
-    },
   },
 });
 
@@ -126,71 +111,55 @@ async function generateMasterPlaylist(variants) {
 
 async function uploadToS3(folder) {
   const files = await fs.readdir(folder);
-  const limit = pLimit(5); // max 5 parallel uploads
-  const tasks = [];
-
   for (const file of files) {
     const filePath = path.join(folder, file);
     const stat = await fs.stat(filePath);
 
     if (stat.isDirectory()) {
-      tasks.push(uploadToS3(filePath));
+      await uploadToS3(filePath); // recursive upload
     } else {
-      tasks.push(limit(async () => {
-        const fileStream = createReadStream(filePath);
-        const s3Key = path.relative("output", filePath).replace(/\\/g, "/");
-        const ext = path.extname(filePath);
+      const fileStream = createReadStream(filePath);
+      const s3Key = path.relative("output", filePath).replace(/\\/g, "/");
+      const ext = path.extname(filePath);
 
-        await s3Client.send(
-          new PutObjectCommand({
-            Bucket: productionBucket,
-            Key: `${key}/${s3Key}`,
-            Body: fileStream,
-            ContentType:
-              ext === ".m3u8"
-                ? "application/vnd.apple.mpegurl"
-                : ext === ".ts"
-                ? "video/MP2T"
-                : "application/octet-stream",
-          })
-        );
+      await s3Client.send(
+        new PutObjectCommand({
+          Bucket: productionBucket,
+          Key: `${key}/${s3Key}`,
+          Body: fileStream,
+          ContentType:
+            ext === ".m3u8"
+              ? "application/vnd.apple.mpegurl"
+              : ext === ".ts"
+              ? "video/MP2T"
+              : "application/octet-stream",
+        })
+      );
 
-        console.log(`☁️ Uploaded: ${s3Key}`);
-      }));
+      console.log(`☁️ Uploaded: ${s3Key}`);
     }
   }
-
-  await Promise.all(tasks);
 }
 
-async function main() {
-  dataCache.connectRedis({
-    port: process.env.REDIS_PORT,
-    host: process.env.REDIS_HOST,
-    username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD,
-  });
-
+(async () => {
+  dataCache.connectRedis({port:process.env.REDIS_PORT,host:process.env.REDIS_HOST,username:process.env.REDIS_USERNAME,password:process.env.REDIS_PASSWORD});
   const cache = dataCache.getCache();
-
   try {
     const originalPath = path.join("output", "original.mp4");
     await downloadOriginalVideo(originalPath);
     const variants = await generateVariants(originalPath);
     await generateMasterPlaylist(variants);
     await uploadToS3("output");
-
-    await cache.lpush(`${process.env.REDIS_POST_VIDEO_PROCESSING_QUEUE}`, key);
-    const command = getDeleteObjectCommand(tempBucket, key);
+    console.log("here is why");
+    await cache.lpush(`${process.env.REDIS_POST_VIDEO_PROCESSING_QUEUE}`,key);
+    const command = getDeleteObjectCommand(tempBucket,key);
     await s3Client.send(command);
-
     console.log("✅ ABR encoding & upload complete.");
+    
     process.exit(0);
   } catch (err) {
     console.error("❌ Error:", err);
-    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`, key);
-    process.exit(1);
+    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
+    process.exit(-1);
   }
-}
-
-main();
+})().finally(()=>{process.exit(0)});
