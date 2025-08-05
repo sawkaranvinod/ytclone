@@ -24,7 +24,7 @@ export function runContainer(accessKeyId, secretAccessKey, region, key, tempBuck
 
 
     const image = imageName;
-    const args = ['run', '--rm', '-d', ...envArgs, image];
+    const args = ['run', '-d', ...envArgs, image];
 
     const dockerProcess = spawn('docker', args, {
       stdio: 'ignore',
@@ -32,7 +32,7 @@ export function runContainer(accessKeyId, secretAccessKey, region, key, tempBuck
     });
     return dockerProcess;
   } catch (error) {
-    console.log("error in the function to start conatiner process")
+    console.log("Error starting container:", error);
   }
 }
 

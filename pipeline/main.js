@@ -1,4 +1,4 @@
-import { createSqsClient} from "./helpers/client.helper.js";
+import { createSqsClient,createS3Client} from "./helpers/client.helper.js";
 import { deleteMessageCommand } from "./helpers/deleteMessage.helper.js";
 import { envVariable } from "./grpcConfigClinet/env/variable.env.js";
 import { getReciveMessageCommand } from "./helpers/reciveMessage.helper.js";
@@ -21,18 +21,41 @@ export async function processMessageFromSqs() {
                     continue;
                 }
                 for (const message of messages) {
-                    const body = message.Body;
-                    const data = await cache.get(`processingVideo:${body.object.key}`);
-                    if (!data) {
-                        const s3Client = createS3Client(envVariable.region,envVariable.accessKeyId,envVariable.secretAccessKey);
-                        const deleteObjectCommand = getDeleteObjectCommand(body.s3.object.key,body.s3.bucket.name);
-                        await s3Client.send(deleteObjectCommand);
-                    };
-                    await cache.persist(`processingVideo:${body.s3.object.key}`);
+                    let body;
+                    try {
+                        body = JSON.parse(message.Body);
+                    } catch (e) {
+                        console.log("Failed to parse message body:", message.Body);
+                        continue;
+                    }
+                    const record = body?.Records?.[0];
+                    const objectKey = record?.s3?.object?.key;
+                    console.log(record)
+                    console.log(objectKey);
+                    if (!objectKey) {
+                        console.log("Invalid message format, missing s3.object.key:", body);
+                        continue;
+                    }
+                    // Now you can safely access objectKey
                     const imageName = `videoprocessing:latest`;
-                    const container = runContainer(envVariable.accessKeyId,envVariable.secretAccessKey,envVariable.region,body.s3.object.key,envVariable.tempBucketName,envVariable.productionBucketName,`${envVariable.port}`,'host.docker.internal',envVariable.username,envVariable.password,envVariable.videoProcessingFaultQueue,envVariable.postVideoProcessingQueue,imageName);
+                    const container = runContainer(
+                        envVariable.accessKeyId,
+                        envVariable.secretAccessKey,
+                        envVariable.region,
+                        decodeURIComponent(objectKey), // error to replace
+                        envVariable.tempBucketName,
+                        envVariable.productionBucketName,
+                        `${envVariable.port}`,
+                        'host.docker.internal',
+                        envVariable.username,
+                        envVariable.password,
+                        envVariable.videoProcessingFaultQueue,
+                        envVariable.postVideoProcessingQueue,
+                        imageName
+                    );
                     container.unref();
-                    const deleteCmd = deleteMessageCommand(envVariable.sqsQueueLink,message);
+                    console.log("container started");
+                    const deleteCmd = deleteMessageCommand(envVariable.sqsQueueLink, message);
                     await sqsClient.send(deleteCmd);
                     console.log("Deleted message:", message.MessageId);
                 }

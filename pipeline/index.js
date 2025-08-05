@@ -6,5 +6,4 @@ import {envVariable} from "./grpcConfigClinet/env/variable.env.js";
     await injectEnvVariables();
     await processMessageFromSqs();
     dataCache.connectRedis(envVariable.redisConfig);
-    
 })();

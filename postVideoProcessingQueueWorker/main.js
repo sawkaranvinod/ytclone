@@ -5,8 +5,9 @@ import { Video } from "./schema/video.model.js";
 export async function consumeMessageQueue() {
     try {
         const cache = dataCache.getCache();
+        console.log("ere")
         while (true) {
-            const key = cache.rpop(`${envVariable.postVideoProcessingQueue}`);
+            const key = await cache.rpop(`${envVariable.postVideoProcessingQueue}`);
             if (!key) {
                 continue;
             };

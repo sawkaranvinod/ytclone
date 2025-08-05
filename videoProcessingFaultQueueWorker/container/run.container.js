@@ -24,7 +24,7 @@ export function runContainer(accessKeyId, secretAccessKey, region, key, tempBuck
 
 
     const image = imageName;
-    const args = ['run', '--rm', '-d', ...envArgs, image];
+    const args = ['run', '-d', ...envArgs, image];
 
     const dockerProcess = spawn('docker', args, {
       stdio: 'ignore',
