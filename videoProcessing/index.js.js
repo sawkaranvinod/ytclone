@@ -1,15 +1,22 @@
 import { S3Client, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { createWriteStream, createReadStream } from "node:fs";
+import { createWriteStream, createReadStream, statSync } from "node:fs";
 import ffmpeg from "fluent-ffmpeg";
 import { config } from "dotenv";
-import {dataCache} from "./config/redis.config.js";
-import {getDeleteObjectCommand} from "./helpers/deleteObjectCommandS3.helper.js"
+import { dataCache } from "./config/redis.config.js";
+import { getDeleteObjectCommand } from "./helpers/deleteObjectCommandS3.helper.js";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+
 config();
 
+// Setup AWS S3 client
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
+  requestHandler: new NodeHttpHandler({
+    connectionTimeout: 300000,
+    socketTimeout: 3000000,
+  }),
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -42,14 +49,41 @@ async function downloadOriginalVideo(localPath) {
   await fs.mkdir(path.dirname(localPath), { recursive: true });
   const command = new GetObjectCommand({ Bucket: tempBucket, Key: key });
   const data = await s3Client.send(command);
+
+  if (!data.Body || typeof data.Body.pipe !== "function") {
+    throw new Error("❌ S3 file body is not a valid stream.");
+  }
+
   const writeStream = createWriteStream(localPath);
-  await new Promise((resolve, reject) => {
-    data.Body.pipe(writeStream)
-      .on("finish", () => {
-        console.log("✅ Download complete:", localPath);
-        resolve();
-      })
-      .on("error", reject);
+  const stream = data.Body;
+
+  return new Promise((resolve, reject) => {
+    stream.pipe(writeStream);
+    stream.on("error", (err) => {
+      console.error("❌ Stream error:", err);
+      reject(err);
+    });
+    writeStream.on("finish", async () => {
+      const { size } = statSync(localPath);
+      console.log("✅ Download complete:", localPath, `(size: ${size} bytes)`);
+      if (size === 0) {
+        return reject(new Error("❌ Downloaded file is empty."));
+      }
+      resolve();
+    });
+    writeStream.on("error", reject);
+  });
+}
+
+async function testFFmpegInput(filePath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err || !metadata || !metadata.streams || metadata.streams.length === 0) {
+        return reject(new Error("❌ Invalid input: ffmpeg could not read metadata."));
+      }
+      console.log("🔍 FFmpeg input metadata:", metadata.format?.format_long_name || "unknown");
+      resolve();
+    });
   });
 }
 
@@ -80,7 +114,7 @@ async function generateVariants(originalPath) {
               resolve({ name, playlistPath, folderPath, width, height });
             })
             .on("error", (err) => {
-              console.error(`❌ Failed variant: ${name}`, err);
+              console.error(`❌ Failed variant: ${name}`, err.message);
               reject(err);
             })
             .run();
@@ -116,7 +150,7 @@ async function uploadToS3(folder) {
     const stat = await fs.stat(filePath);
 
     if (stat.isDirectory()) {
-      await uploadToS3(filePath); // recursive upload
+      await uploadToS3(filePath); // Recursive
     } else {
       const fileStream = createReadStream(filePath);
       const s3Key = path.relative("output", filePath).replace(/\\/g, "/");
@@ -142,24 +176,43 @@ async function uploadToS3(folder) {
 }
 
 (async () => {
-  dataCache.connectRedis({port:process.env.REDIS_PORT,host:process.env.REDIS_HOST,username:process.env.REDIS_USERNAME,password:process.env.REDIS_PASSWORD});
+  dataCache.connectRedis({
+    port: process.env.REDIS_PORT,
+    host: process.env.REDIS_HOST,
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+  });
+
   const cache = dataCache.getCache();
+
   try {
     const originalPath = path.join("output", "original.mp4");
+
+    // Download original video
     await downloadOriginalVideo(originalPath);
+
+    // Test FFmpeg input validity
+    await testFFmpegInput(originalPath);
+
+    // Generate HLS variants
     const variants = await generateVariants(originalPath);
+
+    // Generate master playlist
     await generateMasterPlaylist(variants);
+
+    // Upload to S3
     await uploadToS3("output");
-    console.log("here is why");
-    await cache.lpush(`${process.env.REDIS_POST_VIDEO_PROCESSING_QUEUE}`,key);
-    const command = getDeleteObjectCommand(tempBucket,key);
+
+    // Push job to Redis and delete temp file
+    await cache.lpush(`${process.env.REDIS_POST_VIDEO_PROCESSING_QUEUE}`, key);
+    const command = getDeleteObjectCommand(tempBucket, key);
     await s3Client.send(command);
+
     console.log("✅ ABR encoding & upload complete.");
-    
     process.exit(0);
   } catch (err) {
-    console.error("❌ Error:", err);
-    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`,key);
+    console.error("❌ Error:", err.message || err);
+    await cache.lpush(`${process.env.REDIS_VIDEO_PROCESSING_FAULT_QUEUE}`, key);
     process.exit(-1);
   }
-})().finally(()=>{process.exit(0)});
+})();

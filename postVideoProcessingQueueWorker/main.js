@@ -7,42 +7,47 @@ export async function consumeMessageQueue() {
         const cache = dataCache.getCache();
         while (true) {
             const key = await cache.rpop(`${envVariable.postVideoProcessingQueue}`);
-            if (!key) {
-                continue;
-            };
-            if (key) {
-                console.log(key);
-            }
-            let data = await cache.get(`processingVideo:${key}`);
-            if (!data) {
-                console.log("no message recived");
-                continue;
-            };
-            data = JSON.parse(data);
-            const video = await Video.create(
-                {
+            try {
+                if (!key) {
+                    continue;
+                };
+                if (key) {
+                    console.log(key);
+                }
+                let data = await cache.get(`processingVideo:${key}`);
+                if (!data) {
+                    console.log("no message recived");
+                    continue;
+                };
+                data = JSON.parse(data);
+                const video = await Video.create(
+                    {
+                        channelId: data.channelId,
+                        videoUrl: key,
+                        description: data.description,
+                        title: data.title,
+                        categroy: data.category,
+                        region: data.region,
+                    }
+                );
+                const add = await addData("video", [data]);
+                if (!add) {
+                    await addData("video", data);
+                };
+                await cache.set(`video:${video._id}`, JSON.stringify({
                     channelId: data.channelId,
                     videoUrl: key,
                     description: data.description,
                     title: data.title,
                     categroy: data.category,
                     region: data.region,
-                }
-            );
-            const add = await addData("video", [data]);
-            if (!data) {
-                await addData("video", data);
-            };
-            await cache.set(`video:${video._id}`, JSON.stringify({
-                channelId: data.channelId,
-                videoUrl: key,
-                description: data.description,
-                title: data.title,
-                categroy: data.category,
-                region: data.region,
-            }));
-
-            await cache.del(`processingVideo:${key}`);
+                }));
+    
+                await cache.del(`processingVideo:${key}`);
+            } catch (error) {
+                console.log("error in the infinite loop of the while",error.message);
+                await cache.lpush(`${envVariable.postVideoProcessingQueue}`,key);
+            }
         }
     } catch (error) {
         console.log("error in the main function which consume message from post video processing queue", error.message);

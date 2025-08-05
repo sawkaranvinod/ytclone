@@ -19,6 +19,9 @@ export async function handleUploadVideo(req,reply) {
         if (!url) {
             return replyHandler500(reply);
         };
+        if (!channelId) {
+            return replyHandler500(reply);
+        }
         await cache.set(`processingVideo:${fileName}`,JSON.stringify({userId,description,title,region,category,channelId}),"EX",300);
         return replyHandler200(reply,"sucess",{url});
     } catch (error) {
