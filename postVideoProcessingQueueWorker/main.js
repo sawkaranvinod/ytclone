@@ -23,7 +23,7 @@ export async function consumeMessageQueue() {
                 const video = await Video.create(
                     {
                         channelId: data.channelId,
-                        videoUrl: key,
+                        videoUrl: `https://${envVariable.productionBucketName}.s3.${envVariable.region}.amazonaws.com${key}/master.m3u8`,
                         description: data.description,
                         title: data.title,
                         categroy: data.category,
