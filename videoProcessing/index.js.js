@@ -187,20 +187,10 @@ async function uploadToS3(folder) {
 
   try {
     const originalPath = path.join("output", "original.mp4");
-
-    // Download original video
     await downloadOriginalVideo(originalPath);
-
-    // Test FFmpeg input validity
     await testFFmpegInput(originalPath);
-
-    // Generate HLS variants
     const variants = await generateVariants(originalPath);
-
-    // Generate master playlist
     await generateMasterPlaylist(variants);
-
-    // Upload to S3
     fs.unlink(originalPath,()=>{})
     await uploadToS3("output");
 

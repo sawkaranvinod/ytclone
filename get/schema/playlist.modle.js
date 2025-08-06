@@ -4,7 +4,6 @@ const playlistSchema = new mongoose.Schema(
     {
         userId:{
             type:String,
-            required:true,
             lowercase:true,
             trim:true,
         },
@@ -12,6 +11,15 @@ const playlistSchema = new mongoose.Schema(
             type:String,
             required:true,
         },
+        visiblity:{
+            type:String,
+            enum:["public","private","protected"],
+            required:true,
+        },
+        channelId:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"channels"
+        }
     }
 );
 
